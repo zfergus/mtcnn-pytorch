@@ -1,4 +1,5 @@
 import torch
+from torchvision import transforms
 from torch.autograd import Variable
 import math
 from PIL import Image
@@ -22,6 +23,17 @@ def run_first_stage(image, net, scale, threshold):
         a float numpy array of shape [n_boxes, 9],
             bounding boxes with scores and offsets (4 + 1 + 4).
     """
+    # image_transform = transforms.Compose([
+    #     transforms.ToTensor(),
+    #     transforms.Lambda(lambda x: x * 255)])
+    # data = image_transform(image)[:3].unsqueeze(0)
+
+    # scale the image and convert it to a float array
+    # height, width = data.shape[2:]
+    # sw, sh = math.ceil(width*scale), math.ceil(height*scale)
+    # img2 = torch.nn.functional.interpolate(
+    #     data, (sh, sw), mode="bilinear", align_corners=False)
+    # img =
 
     # scale the image and convert it to a float array
     width, height = image.size
@@ -29,7 +41,7 @@ def run_first_stage(image, net, scale, threshold):
     img = image.resize((sw, sh), Image.BILINEAR)
     img = np.asarray(img, 'float32')
 
-    img = Variable(torch.FloatTensor(_preprocess(img)), volatile=True)
+    img = torch.FloatTensor(_preprocess(img))
     output = net(img)
     probs = output[1].data.numpy()[0, 1, :, :]
     offsets = output[0].data.numpy()

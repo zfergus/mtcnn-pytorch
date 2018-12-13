@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from torchvision import transforms
 from torch.autograd import Variable
 from .get_nets import PNet, RNet, ONet
 from .box_utils import nms, calibrate_box, get_image_boxes, convert_to_square
@@ -20,6 +21,10 @@ def detect_faces(image, min_face_size=20.0,
         two float numpy arrays of shapes [n_boxes, 4] and [n_boxes, 10],
         bounding boxes and facial landmarks.
     """
+    # image_transform = transforms.Compose([
+    #     transforms.ToTensor(),
+    #     transforms.Lambda(lambda x: x * 255)])
+    # data = image_transform(image)[:3].unsqueeze(0)
 
     # LOAD MODELS
     pnet = PNet()
@@ -29,6 +34,7 @@ def detect_faces(image, min_face_size=20.0,
 
     # BUILD AN IMAGE PYRAMID
     width, height = image.size
+    # height, width = data.shape[2:]
     min_length = min(height, width)
 
     min_detection_size = 12
@@ -95,7 +101,7 @@ def detect_faces(image, min_face_size=20.0,
     # STAGE 3
 
     img_boxes = get_image_boxes(bounding_boxes, image, size=48)
-    if len(img_boxes) == 0: 
+    if len(img_boxes) == 0:
         return [], []
     img_boxes = Variable(torch.FloatTensor(img_boxes), volatile=True)
     output = onet(img_boxes)
